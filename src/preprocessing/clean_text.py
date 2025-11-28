@@ -24,9 +24,15 @@ def clean_text(text: str) -> str:
         return ""
 
     text = text.lower()
-    text = re.sub(r"<.*?>", " ", text)
+    
+    # Düzeltme 1: İsteksiz niceleyici yerine negatif karakter sınıfı kullanıldı (Maintainability/L27)
+    text = re.sub(r"<[^>]*>", " ", text)
+    
+    # URL temizleme satırı olduğu gibi kaldı
     text = re.sub(r"http\S+|www\.\S+", " ", text)
-    text = re.sub(r"\(.*?\)", " ", text)
+    
+    # Düzeltme 2: İsteksiz niceleyici yerine negatif karakter sınıfı kullanıldı (Maintainability/L29)
+    text = re.sub(r"\([^)]*\)", " ", text)
     
     # Rakamlar, noktalamalar, özel karakterler temizlenir.
     text = re.sub(r'[^a-z\s]', ' ', text) 
@@ -41,8 +47,7 @@ def clean_text(text: str) -> str:
 
 
 def load_and_clean(path, label):
-    # 🚩 KRİTİK NOKTA 1: Sadece 'text' kolonunu okuyarak olası diğer kolon sızıntılarını engelle
-    # Eğer ham CSV'lerinizde başka kolonlar varsa, onları görmezden gelir.
+    # KRİTİK NOKTA 1: Sadece 'text' kolonunu okuyarak olası diğer kolon sızıntılarını engelle
     df = pd.read_csv(path, usecols=['text'])
     
     # text kolonunu temizle
@@ -64,18 +69,20 @@ def main():
     print("🔄 Merging...")
     full_df = pd.concat([human_df, ai_df], ignore_index=True)
     
-    # 🚩 KRİTİK NOKTA 2: Tüm kolonları kontrol et (Sadece 'text' ve 'label' kalmalı)
+    # KRİTİK NOKTA 2: Tüm kolonları kontrol et (Sadece 'text' ve 'label' kalmalı)
     if list(full_df.columns) != ['text', 'label']:
         print(f"⚠️ DİKKAT: DataFrame'de beklenmedik kolonlar var: {list(full_df.columns)}")
-        # Sadece gerekli kolonları tutarak sızıntı kaynağını ele (Örn. eski bir index kolonu)
+        # Sadece gerekli kolonları tutarak sızıntı kaynağını ele
         full_df = full_df[['text', 'label']]
         print("Kolonlar sadece 'text' ve 'label' olarak filtrelendi.")
 
 
     print("🔀 Shuffling...")
-    # KRİTİK NOKTA 3: shuffle sonrası index'leri sıfırlamak
-    full_df = shuffle(full_df).reset_index(drop=True)
-
+    # KRİTİK NOKTA 3 / Düzeltme 3: shuffle için random_state atandı (Reliability)
+    # from sklearn.utils import shuffle (En başta zaten import edildi)
+    full_df = shuffle(full_df, random_state=42).reset_index(drop=True)
+    
+    
     print("📁 Saving cleaned dataset...")
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     
