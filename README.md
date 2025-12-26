@@ -25,7 +25,7 @@ Bu proje, verilen bir metnin **insan tarafından mı yoksa yapay zeka tarafında
 
 ## Çalışma Mantığı
 1. Metinler TF-IDF yöntemi ile sayısal vektörlere dönüştürülür  
-2. Logistic Regression modeli eğitilir  
+2. Logistic Regression, Naive Bayes, Linear SVC, LightGBM, Random Forest modeli eğitilir  
 3. Girilen metin model tarafından analiz edilir  
 4. Çıktı **Human (İnsan)** veya **AI (Yapay Zeka)** olarak üretilir  
 
